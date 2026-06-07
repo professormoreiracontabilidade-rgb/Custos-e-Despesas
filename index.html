@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz - Contabilidade de Custos</title>
+<style>
+:root{
+  --azul:#073b75; --azul2:#0b5fc1; --verde:#17a34a; --vermelho:#d62828;
+  --fundo:#eef5ff; --card:#ffffff; --texto:#172033; --amarelo:#fff4cf;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#e9f3ff,#ffffff);color:var(--texto)}
+.app{max-width:520px;margin:0 auto;min-height:100vh;padding:14px}
+.header{background:var(--azul);color:#fff;border-radius:18px;padding:16px;text-align:center;box-shadow:0 5px 16px #0002}
+.header h1{font-size:20px;margin:0 0 6px}
+.header p{font-size:13px;margin:0;opacity:.95}
+.card{background:var(--card);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 5px 18px #0001;border:1px solid #dbe8ff}
+h2{font-size:21px;margin:0 0 12px;color:var(--azul)}
+h3{font-size:18px;margin:18px 0 8px;color:var(--azul)}
+p,li{font-size:17px;line-height:1.45}
+.badge{display:inline-block;background:#e7f0ff;color:var(--azul);border-radius:999px;padding:8px 12px;font-weight:bold;font-size:13px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;background:white}
+th,td{border:1px solid #333;padding:5px;vertical-align:top}
+th{background:#f1f6ff}
+.valor{white-space:nowrap;text-align:right}
+.options button{display:block;width:100%;text-align:left;margin:10px 0;padding:14px;border-radius:14px;border:2px solid #c8d8f2;background:#fff;font-size:17px;font-weight:bold;color:#15203b}
+.options button.correct{background:#dff8e8;border-color:var(--verde);color:#0b6b2d}
+.options button.wrong{background:#ffe1e1;border-color:var(--vermelho);color:#8a1616}
+.nav{display:flex;gap:8px;margin-top:14px}
+.nav button,.startBtn{flex:1;border:0;border-radius:14px;padding:14px;background:var(--azul2);color:white;font-size:17px;font-weight:bold}
+.nav button.secondary{background:#54657a}
+.nav button.restart{background:#d97706}
+input{width:100%;padding:15px;border-radius:14px;border:2px solid #bcd1ee;font-size:17px;margin:10px 0}
+.progress{height:10px;background:#d9e7fb;border-radius:20px;overflow:hidden;margin-top:12px}
+.bar{height:100%;background:var(--verde);width:0%}
+.resultado{background:var(--amarelo);border-left:6px solid #f0b429;padding:12px;border-radius:12px;margin-top:12px;font-size:16px;display:none}
+.calc{background:#f8fbff;border:1px dashed #8db5e9;padding:12px;border-radius:12px;margin-top:10px}
+.footer{text-align:center;font-size:12px;color:#506070;margin:12px 0}
+.small{font-size:14px;color:#41536e}
+@media(max-width:380px){table{font-size:11px} p,li,.options button{font-size:16px}.header h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Curso de Contabilidade Professor Moreira</h1>
+    <p>Contabilidade de Custos • Separação entre Custos e Despesas</p>
+  </div>
+
+  <section id="telaInicial" class="card">
+    <h2>📘 Quiz para Celular</h2>
+    <p>Digite seu nome para iniciar a atividade.</p>
+    <input id="nomeAluno" placeholder="Digite seu nome completo">
+    <button class="startBtn" onclick="iniciar()">🚀 Começar atividade</button>
+    <p class="small">Ao final, confira o gabarito comentado e refaça até dominar.</p>
+  </section>
+
+  <section id="quiz" class="card" style="display:none">
+    <span class="badge" id="contador"></span>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div id="conteudo"></div>
+    <div id="opcoes" class="options"></div>
+    <div id="resultado" class="resultado"></div>
+    <div class="nav">
+      <button class="secondary" onclick="voltar()">⬅️ Voltar</button>
+      <button onclick="avancar()">Avançar ➡️</button>
+      <button class="restart" onclick="reiniciar()">🔄 Reiniciar</button>
+    </div>
+  </section>
+
+  <section id="fim" class="card" style="display:none">
+    <h2>🏆 Parabéns, <span id="nomeFinal"></span>!</h2>
+    <p>Você concluiu o quiz de Contabilidade de Custos.</p>
+    <p id="pontuacao"></p>
+    <button class="startBtn" onclick="reiniciar()">🔄 Estudar novamente</button>
+  </section>
+  <div class="footer">WhatsApp: (61) 98532-3574</div>
+</div>
+
+<script>
+const tabelas = {
+alfa: `
+<h3>Indústria Alfa S.A.</h3>
+<table>
+<tr><th>Item</th><th>Gastos do Mês – Custos de Produção e Despesas</th><th>Valor (R$)</th></tr>
+<tr><td>01</td><td>Matérias-primas consumidas no processo produtivo</td><td class="valor">500.000,00</td></tr>
+<tr><td>02</td><td>Salários e encargos do pessoal da fábrica</td><td class="valor">250.000,00</td></tr>
+<tr><td>03</td><td>Depreciação das máquinas da fábrica (linha reta)</td><td class="valor">60.000,00</td></tr>
+<tr><td>04</td><td>Aluguel do prédio da administração geral</td><td class="valor">45.000,00</td></tr>
+<tr><td>05</td><td>Comissões dos vendedores sobre as vendas do mês</td><td class="valor">30.000,00</td></tr>
+<tr><td>06</td><td>Energia elétrica consumida na área de produção</td><td class="valor">35.000,00</td></tr>
+<tr><td>07</td><td>Salários e encargos da diretoria comercial e administrativa</td><td class="valor">120.000,00</td></tr>
+<tr><td>08</td><td>Aluguel do prédio da fábrica</td><td class="valor">80.000,00</td></tr>
+<tr><td>09</td><td>Seguros da área administrativa da empresa</td><td class="valor">15.000,00</td></tr>
+<tr><td>10</td><td>Material de embalagem utilizado no setor de expedição/vendas</td><td class="valor">12.000,00</td></tr>
+<tr><td>11</td><td>Juros de despesas financeiras de empréstimos</td><td class="valor">25.000,00</td></tr>
+<tr><td>12</td><td>Tributos incidentes sobre o faturamento (vendas)</td><td class="valor">180.000,00</td></tr>
+<tr><td>13</td><td>Manutenção preventiva dos equipamentos da fábrica</td><td class="valor">18.000,00</td></tr>
+</table>`,
+delta: `
+<h3>Indústria Metalúrgica Delta S.A.</h3>
+<table>
+<tr><th>Item</th><th>Gastos do Mês – Custos de Produção e Despesas</th><th>Valor (R$)</th></tr>
+<tr><td>01</td><td>Componentes e matérias-primas aplicadas na linha de montagem</td><td class="valor">620.000,00</td></tr>
+<tr><td>02</td><td>Aluguel do escritório central de vendas e administração</td><td class="valor">55.000,00</td></tr>
+<tr><td>03</td><td>Seguro anual das instalações da fábrica (fração mensal)</td><td class="valor">12.000,00</td></tr>
+<tr><td>04</td><td>Salários e encargos dos operários da fábrica</td><td class="valor">410.000,00</td></tr>
+<tr><td>05</td><td>Salários do pessoal do departamento de faturamento e cobrança</td><td class="valor">45.000,00</td></tr>
+<tr><td>06</td><td>Honorários da diretoria financeira e administrativa</td><td class="valor">70.000,00</td></tr>
+<tr><td>07</td><td>Lubrificantes e materiais de consumo das máquinas de produção</td><td class="valor">8.500,00</td></tr>
+<tr><td>08</td><td>Depreciação do prédio onde funciona a fábrica</td><td class="valor">50.000,00</td></tr>
+<tr><td>09</td><td>Depreciação dos computadores da sede administrativa</td><td class="valor">14.000,00</td></tr>
+<tr><td>10</td><td>Fretes pagos para a entrega de produtos vendidos aos clientes</td><td class="valor">19.000,00</td></tr>
+<tr><td>11</td><td>Energia elétrica consumida no pavilhão industrial</td><td class="valor">42.000,00</td></tr>
+<tr><td>12</td><td>Propaganda e publicidade institucional dos produtos</td><td class="valor">28.000,00</td></tr>
+<tr><td>13</td><td>Encargos financeiros sobre empréstimos bancários</td><td class="valor">33.000,00</td></tr>
+</table>`
+};
+
+const questoes = [
+{
+tabela:"alfa",
+titulo:"Questão 01",
+enunciado:"O total dos Custos de Produção do período é:",
+opcoes:["a) R$ 843.000,00","b) R$ 925.000,00","c) R$ 943.000,00","d) R$ 1.123.000,00","e) R$ 1.390.000,00"],
+correta:2,
+comentario:`<b>Gabarito: C.</b><div class="calc">
+Custos de produção: matéria-prima 500.000 + salários da fábrica 250.000 + depreciação das máquinas 60.000 + energia da produção 35.000 + aluguel da fábrica 80.000 + manutenção dos equipamentos 18.000 = <b>R$ 943.000,00</b>.<br><br>
+Observação: pelos dados apresentados, o total técnico dos custos é R$ 943.000,00. Portanto, a alternativa compatível com o cálculo é a letra C.`
+},
+{
+tabela:"alfa",
+titulo:"Questão 02",
+enunciado:"O montante total das Despesas (comerciais, administrativas e financeiras) representa:",
+opcoes:["a) R$ 222.000,00","b) R$ 397.000,00","c) R$ 422.000,00","d) R$ 427.000,00","e) R$ 510.000,00"],
+correta:3,
+comentario:`<b>Gabarito: D (R$ 427.000,00).</b><div class="calc">
+Despesas: aluguel administração 45.000 + comissões vendedores 30.000 + salários diretoria comercial/administrativa 120.000 + seguros administração 15.000 + embalagem expedição/vendas 12.000 + juros 25.000 + tributos sobre vendas 180.000 = <b>R$ 427.000,00</b>.`
+},
+{
+tabela:"delta",
+titulo:"Questão 03",
+enunciado:"O total dos gastos de produção (Custos) da Indústria Delta no mês é:",
+opcoes:["a) R$ 1.030.000,00","b) R$ 1.090.500,00","c) R$ 1.142.500,00","d) R$ 1.154.500,00","e) R$ 1.418.500,00"],
+correta:2,
+comentario:`<b>Gabarito: C.</b><div class="calc">
+Custos de produção: componentes e matérias-primas 620.000 + seguro fábrica 12.000 + operários da fábrica 410.000 + lubrificantes das máquinas 8.500 + depreciação do prédio da fábrica 50.000 + energia industrial 42.000 = <b>R$ 1.142.500,00</b>.`
+},
+{
+tabela:"delta",
+titulo:"Questão 04",
+enunciado:"O montante das despesas (comerciais, administrativas e financeiras) representa:",
+opcoes:["a) R$ 231.000,00","b) R$ 245.000,00","c) R$ 264.000,00","d) R$ 276.000,00","e) R$ 297.000,00"],
+correta:2,
+comentario:`<b>Gabarito: C.</b><div class="calc">
+Despesas: aluguel escritório central 55.000 + faturamento/cobrança 45.000 + diretoria financeira/administrativa 70.000 + depreciação computadores administração 14.000 + fretes de entrega aos clientes 19.000 + propaganda 28.000 + encargos financeiros 33.000 = <b>R$ 264.000,00</b>.`
+}
+];
+
+let atual=0, acertos=0, respondidas={};
+let aluno="";
+
+function iniciar(){
+  aluno=document.getElementById("nomeAluno").value.trim() || "Aluno";
+  document.getElementById("telaInicial").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  render();
+}
+function render(){
+  const q=questoes[atual];
+  document.getElementById("contador").innerText=`${q.titulo} • ${atual+1}/${questoes.length}`;
+  document.getElementById("bar").style.width=((atual+1)/questoes.length*100)+"%";
+  document.getElementById("conteudo").innerHTML=`${tabelas[q.tabela]}<h2>${q.titulo}</h2><p><b>${q.enunciado}</b></p>`;
+  const box=document.getElementById("opcoes"); box.innerHTML="";
+  q.opcoes.forEach((op,i)=>{
+    const b=document.createElement("button");
+    b.innerHTML=op;
+    b.onclick=()=>responder(i,b);
+    box.appendChild(b);
+  });
+  document.getElementById("resultado").style.display="none";
+  document.getElementById("resultado").innerHTML="";
+}
+function responder(i,btn){
+  const q=questoes[atual];
+  if(respondidas[atual]!==undefined) return;
+  respondidas[atual]=i;
+  const botoes=[...document.querySelectorAll(".options button")];
+  botoes[q.correta].classList.add("correct");
+  if(i!==q.correta){btn.classList.add("wrong");} else {acertos++;}
+  const r=document.getElementById("resultado");
+  r.innerHTML=q.comentario;
+  r.style.display="block";
+}
+function avancar(){
+  if(atual<questoes.length-1){atual++;render();}
+  else finalizar();
+}
+function voltar(){
+  if(atual>0){atual--;render();}
+}
+function finalizar(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("fim").style.display="block";
+  document.getElementById("nomeFinal").innerText=aluno;
+  document.getElementById("pontuacao").innerHTML=`Resultado: <b>${acertos}</b> acerto(s) de <b>${questoes.length}</b>.`;
+}
+function reiniciar(){
+  atual=0; acertos=0; respondidas={};
+  document.getElementById("fim").style.display="none";
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("telaInicial").style.display="block";
+}
+</script>
+</body>
+</html>
